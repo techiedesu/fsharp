@@ -1317,6 +1317,9 @@ val copyImplFile: TcGlobals -> ValCopyFlag -> CheckedImplFile -> CheckedImplFile
 /// Copy a method slot signature, including new generic type parameters if the slot signature represents a generic method
 val copySlotSig: SlotSig -> SlotSig
 
+/// Decouple SRTP constraint solution ref cells on typars from shared expression-tree nodes.
+val decoupleTraitSolutions: Typars -> unit
+
 /// Instantiate the generic type parameters in a method slot signature, building a new one
 val instSlotSig: TyparInstantiation -> SlotSig -> SlotSig
 
