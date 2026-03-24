@@ -17,6 +17,30 @@ type ByteAttribute(name : string, value : byte) =
     inherit Attribute()
     new([<Optional>] value : byte) = ByteAttribute("", value)
 
+type SByteAttribute(name : string, value : sbyte) =
+    inherit Attribute()
+    new([<Optional>] value : sbyte) = SByteAttribute("", value)
+
+type Int16Attribute(name : string, value : int16) =
+    inherit Attribute()
+    new([<Optional>] value : int16) = Int16Attribute("", value)
+
+type Int64Attribute(name : string, value : int64) =
+    inherit Attribute()
+    new([<Optional>] value : int64) = Int64Attribute("", value)
+
+type UInt16Attribute(name : string, value : uint16) =
+    inherit Attribute()
+    new([<Optional>] value : uint16) = UInt16Attribute("", value)
+
+type UInt32Attribute(name : string, value : uint32) =
+    inherit Attribute()
+    new([<Optional>] value : uint32) = UInt32Attribute("", value)
+
+type UInt64Attribute(name : string, value : uint64) =
+    inherit Attribute()
+    new([<Optional>] value : uint64) = UInt64Attribute("", value)
+
 type FloatAttribute(name : string, value : float) =
     inherit Attribute()
     new([<Optional>] value : float) = FloatAttribute("", value)
@@ -46,3 +70,22 @@ type T5() = class end
 
 [<Char>]
 type T6() = class end
+
+[<SByte>]
+type T7() = class end
+
+[<Int16>]
+type T8() = class end
+
+[<Int64>]
+type T9() = class end
+
+[<UInt16>]
+type T10() = class end
+
+[<UInt32>]
+type T11() = class end
+
+[<UInt64>]
+type T12() = class end
+
