@@ -227,3 +227,17 @@ if result <> 0.0 then failwithf "Expected 0.0 but got %A" result
         |> withStdOutContains ".NET:"
         |> withStdOutContains "OS:"
         |> ignore
+
+    // https://github.com/dotnet/fsharp/issues/14216
+    [<Fact>]
+    let ``Issue 14216 - No multiemit warning FS2303 when using DU in FSI`` () =
+        Fsx
+            """
+type T = U of unit
+let x = U()
+
+match x with
+| U v -> v
+"""
+        |> eval
+        |> shouldSucceed
