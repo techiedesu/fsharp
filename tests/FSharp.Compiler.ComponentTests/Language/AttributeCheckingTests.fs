@@ -91,5 +91,5 @@ type A = { AField: string }
 type B = { [<DefaultValue([||] : A[])>] BField: A[] }
             """
         |> asLibrary
-        |> compile
+        |> typecheck
         |> shouldSucceed
