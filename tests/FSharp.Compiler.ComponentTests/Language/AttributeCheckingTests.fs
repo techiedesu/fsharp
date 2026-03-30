@@ -80,7 +80,7 @@ type C() =
 
     // https://github.com/dotnet/fsharp/issues/12796
     [<Fact>]
-    let ``Issue 12796 - DefaultValue null on record field of array type should not cause internal error`` () =
+    let ``Issue 12796 - DefaultValue empty array on record field of array type should not cause internal error`` () =
         FSharp
             """
 module TestModule
@@ -88,7 +88,7 @@ module TestModule
 open System.ComponentModel
 
 type A = { AField: string }
-type B = { [<DefaultValue(null)>] BField: A[] }
+type B = { [<DefaultValue([||] : A[])>] BField: A[] }
             """
         |> asLibrary
         |> compile
