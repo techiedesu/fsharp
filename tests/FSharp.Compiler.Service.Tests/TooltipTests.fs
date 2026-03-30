@@ -383,6 +383,17 @@ let assertAndExtractTooltip (ToolTipText(items)) =
             |> taggedTextsToString
         toolTipText, singleElement.XmlDoc, singleElement.Remarks |> Option.map taggedTextsToString
     | _ -> failwith $"Expected group, got {items[0]}"
+
+let getMainDescriptionTags (ToolTipText(items)) =
+    match items with
+    | ToolTipElement.Group [ singleElement ] :: _ -> singleElement.MainDescription
+    | _ -> failwith $"Expected group, got {items}"
+
+let assertNameTagInTooltip expectedTag expectedName (tooltip: ToolTipText) =
+    let tags = getMainDescriptionTags tooltip
+    let found = tags |> Array.exists (fun t -> t.Tag = expectedTag && t.Text = expectedName)
+    let description = tags |> Array.map (fun t -> sprintf "(%A, %s)" t.Tag t.Text) |> String.concat ", "
+    Assert.True(found, sprintf "Expected to find tag %A with text '%s' in tooltip, but found: %s" expectedTag expectedName description)
     
 let assertAndGetSingleToolTipText items =
     let text,_xml,_remarks = assertAndExtractTooltip items
@@ -602,3 +613,50 @@ let normaliz{caret}e' x = x + 1
 """
 
     testXmlDocFallbackToSigFileWhileInImplFile sigSource implSource "Normalize with a prime"
+
+// https://github.com/dotnet/fsharp/issues/10540
+[<Fact>]
+let ``Instance method should be tagged as Method in tooltip`` () =
+    Checker.getTooltip """
+type T() =
+    member x.Metho{caret}d() = ()
+"""
+    |> assertNameTagInTooltip TextTag.Method "Method"
+
+// https://github.com/dotnet/fsharp/issues/10540
+[<Fact>]
+let ``Instance method with parameters should be tagged as Method in tooltip`` () =
+    Checker.getTooltip """
+type T() =
+    member x.Ad{caret}d(a: int, b: int) = a + b
+"""
+    |> assertNameTagInTooltip TextTag.Method "Add"
+
+// https://github.com/dotnet/fsharp/issues/10540
+[<Fact>]
+let ``Static method should be tagged as Method in tooltip`` () =
+    Checker.getTooltip """
+type T() =
+    static member Creat{caret}e() = T()
+"""
+    |> assertNameTagInTooltip TextTag.Method "Create"
+
+// https://github.com/dotnet/fsharp/issues/10540
+[<Fact>]
+let ``Instance property should be tagged as Property in tooltip`` () =
+    Checker.getTooltip """
+namespace Foo
+
+type Bar() =
+    member val Fo{caret}o = "bla" with get, set
+"""
+    |> assertNameTagInTooltip TextTag.Property "Foo"
+
+// https://github.com/dotnet/fsharp/issues/10540
+[<Fact>]
+let ``Instance member without parameters should be tagged as Member in tooltip`` () =
+    Checker.getTooltip """
+type T() =
+    member x.Valu{caret}e = 42
+"""
+    |> assertNameTagInTooltip TextTag.Member "Value"
