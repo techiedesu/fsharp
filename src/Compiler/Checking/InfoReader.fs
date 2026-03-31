@@ -666,8 +666,8 @@ type InfoReader(g: TcGlobals, amap: ImportMap) as this =
               ((fun (pinfo: PropInfo) -> pinfo.IsVirtualProperty),
                (fun pinfo -> pinfo.IsNewSlot),
                (fun pinfo -> pinfo.IsDefiniteFSharpOverride),
-               (fun _ -> false),
-               (fun _ -> false),
+               (fun _ -> false), // isFinal
+               (fun _ -> false), // isAbstract
                PropsGetterSetterEquiv (PropInfosEquivByNameAndSig EraseNone g amap m),
                (fun pinfo -> pinfo.PropertyName)) 
 
