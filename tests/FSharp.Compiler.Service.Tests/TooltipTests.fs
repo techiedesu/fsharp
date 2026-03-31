@@ -396,9 +396,8 @@ let getMainDescriptionTags (ToolTipText(items)) =
 let assertNameTagInTooltip expectedTag expectedName (tooltip: ToolTipText) =
     let tags = getMainDescriptionTags tooltip
     let found = tags |> Array.exists (fun t -> t.Tag = expectedTag && t.Text = expectedName)
-    if not found then
-        let desc = tags |> Array.map (fun t -> sprintf "(%A, %s)" t.Tag t.Text) |> String.concat ", "
-        failwith (sprintf "Expected tag %A with text '%s' in tooltip, but found: %s" expectedTag expectedName desc)
+    let desc = tags |> Array.map (fun t -> sprintf "(%A, %s)" t.Tag t.Text) |> String.concat ", "
+    Assert.True(found, sprintf "Expected tag %A with text '%s' in tooltip, but found: %s" expectedTag expectedName desc)
 
 let normalize (s: string) = s.Replace("\r\n", "\n").Replace("\n\n", "\n")
 
