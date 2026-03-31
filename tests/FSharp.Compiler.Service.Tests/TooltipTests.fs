@@ -383,21 +383,22 @@ let assertAndExtractTooltip (ToolTipText(items)) =
             |> taggedTextsToString
         toolTipText, singleElement.XmlDoc, singleElement.Remarks |> Option.map taggedTextsToString
     | _ -> failwith $"Expected group, got {items[0]}"
-
-let getMainDescriptionTags (ToolTipText(items)) =
-    match items with
-    | ToolTipElement.Group [ singleElement ] :: _ -> singleElement.MainDescription
-    | _ -> failwith $"Expected group, got {items}"
-
-let assertNameTagInTooltip expectedTag expectedName (tooltip: ToolTipText) =
-    let tags = getMainDescriptionTags tooltip
-    let found = tags |> Array.exists (fun t -> t.Tag = expectedTag && t.Text = expectedName)
-    let description = tags |> Array.map (fun t -> sprintf "(%A, %s)" t.Tag t.Text) |> String.concat ", "
-    Assert.True(found, sprintf "Expected to find tag %A with text '%s' in tooltip, but found: %s" expectedTag expectedName description)
     
 let assertAndGetSingleToolTipText items =
     let text,_xml,_remarks = assertAndExtractTooltip items
     text
+
+let getMainDescriptionTags (ToolTipText(items)) =
+    match items with
+    | ToolTipElement.Group [ singleElement ] :: _ -> singleElement.MainDescription
+    | _ -> failwith $"Expected single group in tooltip, got {items}"
+
+let assertNameTagInTooltip expectedTag expectedName (tooltip: ToolTipText) =
+    let tags = getMainDescriptionTags tooltip
+    let found = tags |> Array.exists (fun t -> t.Tag = expectedTag && t.Text = expectedName)
+    if not found then
+        let desc = tags |> Array.map (fun t -> sprintf "(%A, %s)" t.Tag t.Text) |> String.concat ", "
+        failwith (sprintf "Expected tag %A with text '%s' in tooltip, but found: %s" expectedTag expectedName desc)
 
 let normalize (s: string) = s.Replace("\r\n", "\n").Replace("\n\n", "\n")
 
@@ -643,7 +644,16 @@ type T() =
 
 // https://github.com/dotnet/fsharp/issues/10540
 [<Fact>]
-let ``Instance property should be tagged as Property in tooltip`` () =
+let ``Property-like member should be tagged as Property`` () =
+    Checker.getTooltip """
+type T() =
+    member x.Valu{caret}e = 42
+"""
+    |> assertNameTagInTooltip TextTag.Property "Value"
+
+// https://github.com/dotnet/fsharp/issues/10540
+[<Fact>]
+let ``Auto property should be tagged as Property`` () =
     Checker.getTooltip """
 namespace Foo
 
@@ -651,12 +661,3 @@ type Bar() =
     member val Fo{caret}o = "bla" with get, set
 """
     |> assertNameTagInTooltip TextTag.Property "Foo"
-
-// https://github.com/dotnet/fsharp/issues/10540
-[<Fact>]
-let ``Instance member without parameters should be tagged as Member in tooltip`` () =
-    Checker.getTooltip """
-type T() =
-    member x.Valu{caret}e = 42
-"""
-    |> assertNameTagInTooltip TextTag.Member "Value"
