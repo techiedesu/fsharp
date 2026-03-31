@@ -10401,6 +10401,19 @@ and TcMethodApplication
 
         let result, errors = ResolveOverloadingForCall denv cenv.css mMethExpr methodName callerArgs ad postArgumentTypeCheckingCalledMethGroup true returnTy
 
+        // Narrow the error range for unresolved overloading from the whole expression (mMethExpr)
+        // to just the method name. For instance calls like T.Instance.Method(""), mItem covers
+        // the entire "T.Instance.Method" range, so we compute the method-name-only range from
+        // the end of mItem and the method name length. See https://github.com/dotnet/fsharp/issues/14190.
+        let errors =
+            match errors with
+            | ErrorResult(warns, UnresolvedOverloading(denvErr, callerArgsErr, failure, _mWide)) ->
+                let mMethodName =
+                    let startPos = mkPos mItem.EndLine (mItem.EndColumn - methodName.Length)
+                    withStart startPos mItem
+                ErrorResult(warns, UnresolvedOverloading(denvErr, callerArgsErr, failure, mMethodName))
+            | other -> other
+
         match afterResolution, result with
         | AfterResolution.DoNothing, _ -> ()
 
