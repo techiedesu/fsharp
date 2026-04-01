@@ -3,6 +3,36 @@ module ErrorMessages.DiagnosticRegressionTests
 open Xunit
 open FSharp.Test.Compiler
 
+// https://github.com/dotnet/fsharp/issues/6715
+[<Fact>]
+let ``Issue 6715 - land is a valid identifier after ML compat removal`` () =
+    FSharp
+        """
+let land = 3
+let lor = 4
+let lxor = 5
+let lsl = 6
+let lsr = 7
+let asr = 8
+let sum = land + lor + lxor + lsl + lsr + asr
+        """
+    |> asLibrary
+    |> typecheck
+    |> shouldSucceed
+
+// https://github.com/dotnet/fsharp/issues/15655
+[<Fact>]
+let ``Issue 15655 - error codes 999 and 3217 are distinct`` () =
+    // Verify that notAFunctionButMaybeIndexerErrorCode (3217) is distinct from packageManagerError (999)
+    // by triggering a "not a function but maybe indexer" error
+    FSharp
+        """
+let d = System.Collections.Generic.Dictionary<string,int>()
+let v = d ["key"]
+        """
+    |> typecheck
+    |> shouldFail
+    |> withErrorCode 3217
 
 
 // https://github.com/dotnet/fsharp/issues/13697
