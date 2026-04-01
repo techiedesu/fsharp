@@ -141,6 +141,42 @@ let main _ =
         |> asExe
         |> compileExeAndRun
         
+    // https://github.com/dotnet/fsharp/issues/6648
+    [<Fact>]
+    let ``Issue 6648 - DU of DUs with inline static members should compile`` () =
+        FSharp
+            """
+type SomeUnion1<'T> =
+    | Case1A of 'T
+    | Case1B of 'T
+    static member inline (-) (a, b) =
+        match a, b with
+        | Case1A x, Case1A y -> Case1A(x - y)
+        | Case1B x, Case1B y -> Case1B(x - y)
+        | _ -> failwith "mismatch"
+
+type SomeUnion2<'T> =
+    | Case2A of 'T
+    | Case2B of 'T
+    static member inline (-) (a, b) =
+        match a, b with
+        | Case2A x, Case2A y -> Case2A(x - y)
+        | Case2B x, Case2B y -> Case2B(x - y)
+        | _ -> failwith "mismatch"
+
+type UnionOfUnions<'T> =
+    | ParentCase1 of SomeUnion1<'T>
+    | ParentCase2 of SomeUnion2<'T>
+    static member inline (-) (a, b) =
+        match a, b with
+        | ParentCase1 x, ParentCase1 y -> x - y |> ParentCase1
+        | ParentCase2 x, ParentCase2 y -> x - y |> ParentCase2
+        | _ -> failwith "mismatch"
+            """
+        |> asLibrary
+        |> typecheck
+        |> shouldSucceed
+
     // https://github.com/dotnet/fsharp/issues/9382
     [<Fact>]
     let ``Issue 9382 - SRTP stress test with matrix inverse should compile`` () =
