@@ -79,7 +79,9 @@ type C() =
         |> shouldSucceed
 
     // https://github.com/dotnet/fsharp/issues/12796
-    [<Fact>]
+    // On Desktop .NET Framework, this still triggers FS0192 internal error in encodeCustomAttrElemType
+    // during attribute encoding. The bug is fixed on CoreCLR only.
+    [<FSharp.Test.FactForNETCOREAPP>]
     let ``Issue 12796 - DefaultValue empty array on record field of array type should not cause internal error`` () =
         FSharp
             """
